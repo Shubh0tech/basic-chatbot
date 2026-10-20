@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neony — Rule-Based Chatbot</title>
+<style>
+:root{--bg:#0B0E1A;--panel:#141A2E;--panel2:#1C2440;--line:#2A3357;--text:#EDF1FF;--dim:#8A94B8;--green:#00E5A0;--cyan:#22D3EE;--yellow:#FFB84D;--pink:#FF5C7A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 70% -10%,rgba(0,229,160,.10),transparent),var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,sans-serif;height:100vh;display:flex;align-items:center;justify-content:center}
+.app{width:100%;max-width:680px;height:92vh;max-height:820px;background:var(--panel);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 70px rgba(0,0,0,.55)}
+header{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:24px}
+h1{font-size:18px;color:var(--green);letter-spacing:1px}
+.status{font-size:11px;color:var(--dim)}
+.dot{color:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.chat{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.45;animation:pop .18s ease-out;white-space:pre-wrap}
+@keyframes pop{from{transform:translateY(6px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.bot{align-self:flex-start;background:#0F2A26;border-left:3px solid var(--green);border-bottom-left-radius:4px}
+.user{align-self:flex-end;background:var(--panel2);border-bottom-right-radius:4px}
+.typing{align-self:flex-start;display:flex;gap:5px;padding:12px 16px;background:#0F2A26;border-left:3px solid var(--green);border-radius:14px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--green);animation:bounce .9s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.chips{display:flex;gap:8px;padding:10px 16px;flex-wrap:wrap;background:var(--panel);border-top:1px solid var(--line)}
+.chip{background:var(--panel2);color:var(--cyan);border:0;border-radius:999px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit}
+.chip:hover{background:#243055}
+.bar{display:flex;gap:10px;padding:12px 16px 16px;background:var(--panel)}
+input{flex:1;background:#0E1326;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;outline:none;font-family:inherit}
+input:focus{border-color:var(--green)}
+button.send{background:var(--green);color:#06251B;border:0;border-radius:10px;padding:0 22px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
+button.send:hover{filter:brightness(1.15)}
+footer{text-align:center;font-size:11px;color:var(--dim);padding-bottom:10px;background:var(--panel)}
+footer a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="avatar">&#129302;</div>
+    <div>
+      <h1>NEONY</h1>
+      <div class="status"><span class="dot">&#9679;</span> online &bull; rule-based &bull; if-elif brain</div>
+    </div>
+  </header>
+  <div class="chat" id="chat"></div>
+  <div class="chips" id="chips"></div>
+  <div class="bar">
+    <input id="input" placeholder="Type a message... (hello / how are you / bye)" autocomplete="off">
+    <button class="send" onclick="send()">SEND</button>
+  </div>
+  <footer>Python + web chatbot &mdash; source on <a href="https://github.com/Shubh0tech/basic-chatbot">GitHub</a></footer>
+</div>
+<script>
+// ====== rule engine: same if-elif logic as the Python version ======
+const JOKES = [
+  "Why do programmers prefer dark mode? Because light attracts bugs!",
+  "Why was the JavaScript developer sad? Because he didn't Node how to Express himself.",
+  "There are 10 kinds of people: those who understand binary and those who don't.",
+  'A SQL query walks into a bar, approaches two tables and asks: "May I join you?"',
+  "Why did the developer go broke? He used up all his cache."
+];
+function pad(n){ return String(n).padStart(2,"0"); }
+function getReply(userText){
+  const text = userText.toLowerCase().trim();
+  const now = new Date();
+  if (["hello","hi","hey","hii","hello!","hi!","hey!"].includes(text)) return "Hi!";
+  else if (text.includes("hello") || text.startsWith("hi")) return "Hello there! How can I help you?";
+  else if (text.includes("how are you") || text.includes("how do you do") || text.includes("hru")) return "I'm fine, thanks! How about you?";
+  else if (text.includes("i am fine") || text.includes("i'm fine") || text === "good") return "Glad to hear that! What can I do for you?";
+  else if (text.includes("your name") || text.includes("who are you")) return "I'm Neony, your rule-based chatbot!";
+  else if (text.includes("my name")) {
+    const name = userText.split(/name/i)[1].replace(/^[\s is:,!.]+|[\s!.]+$/g,"");
+    return name ? `Nice to meet you, ${name}!` : "Tell me: my name is ...";
+  }
+  else if (text.includes("who made you") || text.includes("creator")) return "I was built with JavaScript from the same rules as the Python bot!";
+  else if (text.includes("help") || text.includes("what can you do")) return "I can chat! Try: 'how are you', 'tell me a joke', 'what time is it', 'bye'.";
+  else if (text.includes("joke")) return JOKES[Math.floor(Math.random()*JOKES.length)];
+  else if (text.includes("time")) return `It's ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} right now.`;
+  else if (text.includes("date") || text.includes("day")) return `Today is ${now.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}.`;
+  else if (text.includes("i love you")) return "Aww, that's sweet! I love chatting with you too!";
+  else if (text.includes("thank")) return "You're welcome!";
+  else if (text.includes("sorry")) return "No problem at all!";
+  else if (text.includes("bye") || text.includes("goodbye") || text.includes("see you") || text.includes("exit")) return "Goodbye! Have a great day!";
+  else if (text.includes("weather")) return "I live inside a browser, so the weather is always sunny!";
+  else if (text.includes("age")) return "I'm only a few lines of JavaScript, but age is just a number!";
+  else if (text.includes("are you real") || text.includes("are you human")) return "Nope, I'm just if-elif rules pretending to be smart!";
+  else if (["ok","okay","hmm","k"].includes(text)) return "Anything else you want to ask?";
+  else if (text === "?") return "That's a deep question!";
+  else if (!text) return "Type something and press Enter!";
+  return "I'm just a simple bot - try 'help' to see what I know!";
+}
+
+// ====== chat UI ======
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+function addBubble(text, who){
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+function typingIndicator(){
+  const div = document.createElement("div");
+  div.className = "typing";
+  div.id = "typing";
+  div.innerHTML = "<span></span><span></span><span></span>";
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+function send(preset){
+  const text = (preset !== undefined ? preset : input.value).trim();
+  if(!text) return;
+  input.value = "";
+  addBubble(text, "user");
+  typingIndicator();
+  setTimeout(()=>{
+    document.getElementById("typing")?.remove();
+    addBubble(getReply(text), "bot");
+    if(!preset && /^(bye|goodbye|exit|quit|q)$/.test(text.toLowerCase()))
+      setTimeout(()=>addBubble("Refresh the page to chat again!", "bot"), 500);
+  }, 350 + Math.random()*450);
+}
+input.addEventListener("keydown", e=>{ if(e.key==="Enter") send(); });
+
+// ====== quick chips ======
+for(const c of ["hello","how are you","tell me a joke","what time is it","my name is Shubh","help","bye"]){
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = c;
+  b.onclick = ()=>send(c);
+  document.getElementById("chips").appendChild(b);
+}
+addBubble("Hi! I'm Neony. Type a message or pick a chip below - try 'help'!", "bot");
+</script>
+</body>
+</html>
