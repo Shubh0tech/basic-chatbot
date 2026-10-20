@@ -1,17 +1,20 @@
 # Basic Chatbot (Task 4 — rule based)
 
+## 🚀 Try it live → https://shubh0tech.github.io/basic-chatbot/
+
+Open the link above and chat with Neony right in your browser — no install needed.
+This is the direct-use link for submission.
+
 A simple **rule-based chatbot** in Python (CLI + eye-catching Tkinter GUI)
 plus a matching **web version** you can chat with in the browser.
 Standard library only — no pip installs.
 
-## Run
+## Run locally
 
 ```
 py basic_chatbot.py          # GUI chat window (dark neon, chat bubbles)
 py basic_chatbot.py --cli    # terminal chat
 ```
-
-Web version: open `docs/index.html` in a browser, or use the live GitHub Pages site.
 
 ## Scope (matches the task)
 
@@ -39,3 +42,8 @@ and "bye" to end the conversation — plus a fallback reply for anything else.
 basic_chatbot.py   # Python chatbot (GUI + CLI, single file)
 docs/index.html    # web version (GitHub Pages)
 ```
+
+## Links
+
+- **Live web app:** https://shubh0tech.github.io/basic-chatbot/
+- **Source:** https://github.com/Shubh0tech/basic-chatbot
